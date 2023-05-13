@@ -1849,7 +1849,8 @@ Abc_Ntk_t * Abc_NtkDarToCnf( Abc_Ntk_t * pNtk, char * pFileName, int fFastAlgo, 
     assert( Abc_NtkIsStrash(pNtk) );
 
     // convert to the AIG manager
-    pMan = Abc_NtkToDar( pNtk, 0, 0 );
+    // pMan = Abc_NtkToDar( pNtk, 0, 0 );
+    pMan = Abc_NtkToDar( pNtk, 0, 1 ); //I add
     if ( pMan == NULL )
         return NULL;
     if ( !Aig_ManCheck( pMan ) )
@@ -1866,7 +1867,44 @@ Abc_Ntk_t * Abc_NtkDarToCnf( Abc_Ntk_t * pNtk, char * pFileName, int fFastAlgo, 
     if ( fFastAlgo )
         pCnf = Cnf_DeriveFast( pMan, 0 );
     else
-        pCnf = Cnf_Derive( pMan, 0 );
+        // pCnf = Cnf_Derive( pMan, 0 );
+        pCnf = Cnf_Derive( pMan, Aig_ManCoNum(pMan) ); //I add
+
+    //I add
+    FILE * file;
+    if ( pFileName[3] == '1')
+        file = fopen( "map1", "w" );
+    else
+        file = fopen( "map2", "w" );
+    int j;
+    Aig_Obj_t* pObj = *(pMan->pObjCopies);
+    Aig_ManForEachCi(pMan, pObj, j)
+    {
+        fprintf(file, "%d  ",pObj->Type);
+        int var = pCnf->pVarNums[pObj->Id];
+        fprintf(file, "%d  ",pObj->Id);
+        fprintf(file, "%d\n",var);
+    }
+    Aig_ManForEachCo(pMan, pObj, j)
+    {
+        fprintf(file, "%d  ",pObj->Type);
+        int var = pCnf->pVarNums[pObj->Id];
+        fprintf(file, "%d  ",pObj->Id);
+        fprintf(file, "%d\n",var);
+    }
+    fclose(file);
+    // int * pLit, * pStop, i;
+    // for ( i = 0; i < pCnf->nClauses; i++ )
+    // {
+    //     int temp = 0;
+    //     for ( pLit = pCnf->pClauses[i], pStop = pCnf->pClauses[i+1]; pLit < pStop; pLit++ ){
+    //         temp++;
+    //         printf("%d  ", (*pLit & 1)? -(*pLit >> 1)-1 : (*pLit >> 1)+1);
+    //     }
+    //     printf("0\n");
+    //     printf("%d\n",temp);
+    // }
+
 
     // adjust polarity
     if ( fChangePol )
@@ -1893,7 +1931,6 @@ Abc_Ntk_t * Abc_NtkDarToCnf( Abc_Ntk_t * pNtk, char * pFileName, int fFastAlgo, 
     Aig_ManStop( pMan );
     return pNtkNew;
 }
-
 
 /**Function*************************************************************
 
