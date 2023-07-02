@@ -19,6 +19,9 @@
 ***********************************************************************/
 
 #include "base/abc/abc.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef ABC_USE_CUDD
 #include "bdd/extrab/extraBdd.h"
@@ -78,6 +81,7 @@ void Abc_NtkPrintUnateBdd( Abc_Ntk_t * pNtk, int fUseNaive, int fVerbose )
     int TotalSupps = 0;
     int TotalUnate = 0;
     int i;
+    FILE*      output;
     abctime clk = Abc_Clock();
     abctime clkBdd, clkUnate;
 
@@ -117,8 +121,10 @@ clkBdd = Abc_Clock() - clk;
     {
         // create ZDD variables in the manager
         Cudd_zddVarsFromBddVars( dd, 2 );
+        output = fopen("unateness.txt", "a+");
         Abc_NtkForEachCo( pNtk, pNode, i )
         {
+            // printf("%s\n", Abc_ObjName(pNode));
 //            p = Extra_UnateComputeFast( dd, pbGlobal[i] );
             p = Extra_UnateComputeFast( dd, (DdNode *)Abc_ObjGlobalBdd(pNode) );
             if ( fVerbose )
@@ -126,11 +132,14 @@ clkBdd = Abc_Clock() - clk;
                 printf( "Out%4d : ", i );
                 Extra_UnateInfoPrint( p );
             }
+            // printf("%d\n", p->nUnate);
+            fprintf(output, "%s %d\n", Abc_ObjName(pNode), p->nUnate);
             TotalSupps += p->nVars;
             TotalUnate += p->nUnate;
             Extra_UnateInfoDissolve( p );
         }
     }
+    fclose(output);
 clkUnate = Abc_Clock() - clk - clkBdd;
 
     // print stats
