@@ -330,7 +330,7 @@ extern Extra_UnateInfo_t *  Extra_UnateInfoAllocate( int nVars );
 /* deallocates the data structure */
 extern void        Extra_UnateInfoDissolve( Extra_UnateInfo_t * );
 /* print the contents the data structure */
-extern void        Extra_UnateInfoPrint( Extra_UnateInfo_t * );
+extern void        Extra_UnateInfoPrint( Extra_UnateInfo_t *, int *);
 /* converts the ZDD into the Extra_SymmInfo_t structure */
 extern Extra_UnateInfo_t *  Extra_UnateInfoCreateFromZdd( DdManager * dd, DdNode * zUnate, DdNode * bVars );
 /* naive check of unateness of one variable */

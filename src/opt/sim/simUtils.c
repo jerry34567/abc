@@ -20,6 +20,9 @@
 
 #include "base/abc/abc.h"
 #include "sim.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 ABC_NAMESPACE_IMPL_START
 
@@ -371,8 +374,8 @@ void Sim_UtilTransferNodeOne( Abc_Obj_t * pNode, Vec_Ptr_t * vSimInfo, int nSimW
 int Sim_UtilCountSuppSizes( Sim_Man_t * p, int fStruct )
 {
     Abc_Obj_t * pNode, * pNodeCi;
-    int i, v, Counter;
-    Counter = 0;
+    int i, v, Counter, mycnt;
+    Counter = 0; mycnt = 0;
     if ( fStruct )
     {
         Abc_NtkForEachCo( p->pNtk, pNode, i )
@@ -381,9 +384,19 @@ int Sim_UtilCountSuppSizes( Sim_Man_t * p, int fStruct )
     }
     else
     {
+        FILE*      output;
+        output = fopen("./preprocess/funcsupp.txt", "a+");
         Abc_NtkForEachCo( p->pNtk, pNode, i )
-            Abc_NtkForEachCi( p->pNtk, pNodeCi, v )
+        {
+            fprintf(output,"%s ", Abc_ObjName(pNode));
+            Abc_NtkForEachCi( p->pNtk, pNodeCi, v ){
                 Counter += Sim_SuppFunHasVar( p->vSuppFun, i, v );
+                mycnt += Sim_SuppFunHasVar( p->vSuppFun, i, v );
+            }
+            fprintf(output, "%d\n", mycnt);
+            mycnt = 0;
+        }
+        fclose(output);
     }
     return Counter;
 }

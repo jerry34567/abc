@@ -108,8 +108,9 @@ clkBdd = Abc_Clock() - clk;
             p = Extra_UnateComputeSlow( dd, (DdNode *)Abc_ObjGlobalBdd(pNode) );
             if ( fVerbose )
             {
+                
                 printf( "Out%4d : ", i );
-                Extra_UnateInfoPrint( p );
+                // Extra_UnateInfoPrint( p );
             }
             TotalSupps += p->nVars;
             TotalUnate += p->nUnate;
@@ -121,19 +122,24 @@ clkBdd = Abc_Clock() - clk;
     {
         // create ZDD variables in the manager
         Cudd_zddVarsFromBddVars( dd, 2 );
-        output = fopen("unateness.txt", "a+");
+        output = fopen("./preprocess/outputUnateness.txt", "a+");
         Abc_NtkForEachCo( pNtk, pNode, i )
         {
             // printf("%s\n", Abc_ObjName(pNode));
 //            p = Extra_UnateComputeFast( dd, pbGlobal[i] );
             p = Extra_UnateComputeFast( dd, (DdNode *)Abc_ObjGlobalBdd(pNode) );
+            int * _unatePIs;
+            _unatePIs = (int *) malloc(p->nVarsMax * sizeof(int));
+            for(int i = 0; i < p->nVarsMax; ++i)
+                _unatePIs[i] = -1;
             if ( fVerbose )
             {
                 printf( "Out%4d : ", i );
-                Extra_UnateInfoPrint( p );
+                Extra_UnateInfoPrint( p, _unatePIs );
             }
             // printf("%d\n", p->nUnate);
             fprintf(output, "%s %d\n", Abc_ObjName(pNode), p->nUnate);
+            free(_unatePIs);
             TotalSupps += p->nVars;
             TotalUnate += p->nUnate;
             Extra_UnateInfoDissolve( p );

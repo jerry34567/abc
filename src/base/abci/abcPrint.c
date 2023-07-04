@@ -1513,7 +1513,7 @@ Abc_NtkPrintStrSupports(Abc_Ntk_t* pNtk, int fMatrix) {
     Abc_Obj_t* pObj;
     int        i, k, nPis;
     FILE*      output;
-    output = fopen("funcsupp.txt", "a+");
+    output = fopen("./preprocess/funcsupp.txt", "a+");
     printf("Structural support info:\n");
     Abc_NtkForEachCo(pNtk, pObj, i) {
         vSupp  = Abc_NtkNodeSupport(pNtk, &pObj, 1);

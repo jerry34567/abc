@@ -21,7 +21,9 @@
 ***********************************************************************/
 
 #include "extraBdd.h"
-
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 ABC_NAMESPACE_IMPL_START
 
 
@@ -192,21 +194,30 @@ void Extra_UnateInfoDissolve( Extra_UnateInfo_t * p )
   SeeAlso     []
 
 ******************************************************************************/
-void Extra_UnateInfoPrint( Extra_UnateInfo_t * p )
+void Extra_UnateInfoPrint( Extra_UnateInfo_t * p , int * _unatePI)
 {
     char * pBuffer;
     int i;
     pBuffer = ABC_ALLOC( char, p->nVarsMax+1 );
-    memset( pBuffer, ' ', (size_t)p->nVarsMax );
-    pBuffer[p->nVarsMax] = 0;
+    memset( pBuffer, '.', (size_t)p->nVarsMax );
+    FILE*      test;
+    test = fopen("./preprocess/inputUnateness.txt", "a+");
+    
+    pBuffer[p->nVarsMax] = 0;   // p->nVarsMax = the number of all input 
     for ( i = 0; i < p->nVars; i++ )
+    {
+
         if ( p->pVars[i].Neg )
             pBuffer[ p->pVars[i].iVar ] = 'n';
         else if ( p->pVars[i].Pos )
             pBuffer[ p->pVars[i].iVar ] = 'p';
         else
             pBuffer[ p->pVars[i].iVar ] = '.';
+
+    }
     printf( "%s\n", pBuffer );
+    fprintf(test, "%s\n", pBuffer );
+    fclose(test);
     ABC_FREE( pBuffer );
 } /* end of Extra_UnateInfoPrint */
 
