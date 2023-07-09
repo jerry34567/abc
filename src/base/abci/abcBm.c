@@ -48,7 +48,7 @@ void getDependencies(Abc_Ntk_t *pNtk, Vec_Int_t** iDep, Vec_Int_t** oDep)
     Vec_Ptr_t * vSuppFun;
     int i, j;    
     
-    vSuppFun = Sim_ComputeFunSupp(pNtk, 0);
+    vSuppFun = Sim_ComputeFunSupp(pNtk, 0, 0);
     for(i = 0; i < Abc_NtkPoNum(pNtk); i++) {
         char * seg = (char *)vSuppFun->pArray[i];
         

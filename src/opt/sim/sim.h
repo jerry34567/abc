@@ -180,8 +180,8 @@ extern Sym_Man_t *     Sym_ManStart( Abc_Ntk_t * pNtk, int fVerbose );
 extern void            Sym_ManStop( Sym_Man_t * p );
 extern void            Sym_ManPrintStats( Sym_Man_t * p );
 extern Sim_Man_t *     Sim_ManStart( Abc_Ntk_t * pNtk, int fLightweight );
-extern void            Sim_ManStop( Sim_Man_t * p );
-extern void            Sim_ManPrintStats( Sim_Man_t * p );
+extern void            Sim_ManStop( Sim_Man_t * p , int _write);
+extern void            Sim_ManPrintStats( Sim_Man_t * p , int _write);
 extern Sim_Pat_t *     Sim_ManPatAlloc( Sim_Man_t * p );
 extern void            Sim_ManPatFree( Sim_Man_t * p, Sim_Pat_t * pPat );
 /*=== simSeq.c ==========================================================*/
@@ -189,7 +189,7 @@ extern Vec_Ptr_t *     Sim_SimulateSeqRandom( Abc_Ntk_t * pNtk, int nFrames, int
 extern Vec_Ptr_t *     Sim_SimulateSeqModel( Abc_Ntk_t * pNtk, int nFrames, int * pModel );
 /*=== simSupp.c ==========================================================*/
 extern Vec_Ptr_t *     Sim_ComputeStrSupp( Abc_Ntk_t * pNtk );
-extern Vec_Ptr_t *     Sim_ComputeFunSupp( Abc_Ntk_t * pNtk, int fVerbose );
+extern Vec_Ptr_t *     Sim_ComputeFunSupp( Abc_Ntk_t * pNtk, int fVerbose , int _write);
 /*=== simSym.c ==========================================================*/
 extern int             Sim_ComputeTwoVarSymms( Abc_Ntk_t * pNtk, int fVerbose );
 /*=== simSymSat.c ==========================================================*/
@@ -210,7 +210,7 @@ extern void            Sim_UtilSimulate( Sim_Man_t * p, int  fFirst );
 extern void            Sim_UtilSimulateNode( Sim_Man_t * p, Abc_Obj_t * pNode, int  fType, int  fType1, int  fType2 );
 extern void            Sim_UtilSimulateNodeOne( Abc_Obj_t * pNode, Vec_Ptr_t * vSimInfo, int nSimWords, int nOffset );
 extern void            Sim_UtilTransferNodeOne( Abc_Obj_t * pNode, Vec_Ptr_t * vSimInfo, int nSimWords, int nOffset, int fShift );
-extern int             Sim_UtilCountSuppSizes( Sim_Man_t * p, int fStruct );
+extern int             Sim_UtilCountSuppSizes( Sim_Man_t * p, int fStruct, int _write );
 extern int             Sim_UtilCountOnes( unsigned * pSimInfo, int nSimWords );
 extern Vec_Int_t *     Sim_UtilCountOnesArray( Vec_Ptr_t * vInfo, int nSimWords );
 extern void            Sim_UtilSetRandom( unsigned * pPatRand, int nSimWords );

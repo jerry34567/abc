@@ -371,7 +371,7 @@ void Sim_UtilTransferNodeOne( Abc_Obj_t * pNode, Vec_Ptr_t * vSimInfo, int nSimW
   SeeAlso     []
 
 ***********************************************************************/
-int Sim_UtilCountSuppSizes( Sim_Man_t * p, int fStruct )
+int Sim_UtilCountSuppSizes( Sim_Man_t * p, int fStruct, int _write )
 {
     Abc_Obj_t * pNode, * pNodeCi;
     int i, v, Counter, mycnt;
@@ -382,18 +382,35 @@ int Sim_UtilCountSuppSizes( Sim_Man_t * p, int fStruct )
             Abc_NtkForEachCi( p->pNtk, pNodeCi, v )
                 Counter += Sim_SuppStrHasVar( p->vSuppStr, pNode, v );
     }
+    else if(_write == 0)
+    {
+        Abc_NtkForEachCo( p->pNtk, pNode, i )
+        {
+            Abc_NtkForEachCi( p->pNtk, pNodeCi, v ){
+                Counter += Sim_SuppFunHasVar( p->vSuppFun, i, v );
+            }
+        }
+    }
     else
     {
         FILE*      output;
         output = fopen("./preprocess/funcsupp.txt", "a+");
         Abc_NtkForEachCo( p->pNtk, pNode, i )
         {
+            char* funcSuppName[p->nInputs];
+            int myindex = 0;
             fprintf(output,"%s ", Abc_ObjName(pNode));
             Abc_NtkForEachCi( p->pNtk, pNodeCi, v ){
+                int tmp = Counter;
                 Counter += Sim_SuppFunHasVar( p->vSuppFun, i, v );
+                if(tmp != Counter)
+                    funcSuppName[myindex++] = Abc_ObjName(pNodeCi);
                 mycnt += Sim_SuppFunHasVar( p->vSuppFun, i, v );
             }
-            fprintf(output, "%d\n", mycnt);
+            fprintf(output, "%d ", mycnt);
+            for(int it = 0; it < myindex; ++it)
+                fprintf(output, "%s ", funcSuppName[it]);
+            fprintf(output ,";\n");
             mycnt = 0;
         }
         fclose(output);

@@ -2082,7 +2082,7 @@ int Abc_CommandPrintSupport( Abc_Frame_t * pAbc, int argc, char ** argv )
     int fStruct;
     int fVerbose;
     int fVeryVerbose;
-    extern Vec_Ptr_t * Sim_ComputeFunSupp( Abc_Ntk_t * pNtk, int fVerbose );
+    extern Vec_Ptr_t * Sim_ComputeFunSupp( Abc_Ntk_t * pNtk, int fVerbose, int _write );
     extern void Abc_NtkPrintStrSupports( Abc_Ntk_t * pNtk, int fMatrix );
 
     // set defaults
@@ -2133,7 +2133,7 @@ int Abc_CommandPrintSupport( Abc_Frame_t * pAbc, int argc, char ** argv )
         Abc_Print( -1, "This command works only for AIGs (run \"strash\").\n" );
         return 1;
     }
-    vSuppFun = Sim_ComputeFunSupp( pNtk, fVerbose );
+    vSuppFun = Sim_ComputeFunSupp( pNtk, fVerbose , 1);
     ABC_FREE( vSuppFun->pArray[0] );
     Vec_PtrFree( vSuppFun );
     return 0;

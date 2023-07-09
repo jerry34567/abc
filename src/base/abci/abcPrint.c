@@ -1512,8 +1512,8 @@ Abc_NtkPrintStrSupports(Abc_Ntk_t* pNtk, int fMatrix) {
     Vec_Ptr_t *vSupp, *vNodes;
     Abc_Obj_t* pObj;
     int        i, k, nPis;
-    FILE*      output;
-    output = fopen("./preprocess/funcsupp.txt", "a+");
+    // FILE*      output;
+    // output = fopen("./preprocess/funcsupp.txt", "a+");
     printf("Structural support info:\n");
     Abc_NtkForEachCo(pNtk, pObj, i) {
         vSupp  = Abc_NtkNodeSupport(pNtk, &pObj, 1);
@@ -1523,12 +1523,12 @@ Abc_NtkPrintStrSupports(Abc_Ntk_t* pNtk, int fMatrix) {
             "%5d  %20s :  Cone = %5d.  Supp = %5d. (PIs = %5d. FFs = %5d.)\n",
             i, Abc_ObjName(pObj), vNodes->nSize, vSupp->nSize, nPis,
             vSupp->nSize - nPis);
-        fprintf(output, "%s %d\n", Abc_ObjName(pObj), vSupp->nSize);
+        // fprintf(output, "%s %d\n", Abc_ObjName(pObj), vSupp->nSize);
         Vec_PtrFree(vNodes);
         Vec_PtrFree(vSupp);
     }
     // fprintf(output, "-\n");
-    fclose(output);
+    // fclose(output);
     if (!fMatrix) {
         Abc_NtkCleanMarkA(pNtk);
         return;

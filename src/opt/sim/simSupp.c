@@ -100,7 +100,7 @@ Vec_Ptr_t * Sim_ComputeStrSupp( Abc_Ntk_t * pNtk )
   SeeAlso     []
 
 ***********************************************************************/
-Vec_Ptr_t * Sim_ComputeFunSupp( Abc_Ntk_t * pNtk, int fVerbose )
+Vec_Ptr_t * Sim_ComputeFunSupp( Abc_Ntk_t * pNtk, int fVerbose, int _write) // _write == 1 -> enable write in funcSupp.txt
 {
     Sim_Man_t * p;
     Vec_Ptr_t * vResult;
@@ -154,7 +154,7 @@ exit:
 p->timeTotal = Abc_Clock() - clk;
     vResult = p->vSuppFun;  
     //  p->vSuppFun = NULL;
-    Sim_ManStop( p );
+    Sim_ManStop( p , _write);    // enable write in funcSupp.txt
     return vResult;
 }
 

@@ -75,7 +75,7 @@ Sym_Man_t * Sym_ManStart( Abc_Ntk_t * pNtk, int fVerbose )
     p->vVarsU   = Vec_IntStart( 100 );
     p->vVarsV   = Vec_IntStart( 100 );
     // compute supports
-    p->vSuppFun  = Sim_ComputeFunSupp( pNtk, fVerbose );
+    p->vSuppFun  = Sim_ComputeFunSupp( pNtk, fVerbose , 0);
     p->vSupports = Vec_VecStart( p->nOutputs );
     for ( i = 0; i < p->nOutputs; i++ )
         for ( v = 0; v < p->nInputs; v++ )
@@ -205,9 +205,9 @@ Sim_Man_t * Sim_ManStart( Abc_Ntk_t * pNtk, int fLightweight )
   SeeAlso     []
 
 ***********************************************************************/
-void Sim_ManStop( Sim_Man_t * p )
+void Sim_ManStop( Sim_Man_t * p , int _write) // whether write to funcSupp.txt or not( if _write = 1 -> enable write)
 {
-    Sim_ManPrintStats( p );
+    Sim_ManPrintStats( p , _write);
     if ( p->vSim0 )        Sim_UtilInfoFree( p->vSim0 );       
     if ( p->vSim1 )        Sim_UtilInfoFree( p->vSim1 );       
     if ( p->vSuppStr )     Sim_UtilInfoFree( p->vSuppStr );    
@@ -230,12 +230,12 @@ void Sim_ManStop( Sim_Man_t * p )
   SeeAlso     []
 
 ***********************************************************************/
-void Sim_ManPrintStats( Sim_Man_t * p )
+void Sim_ManPrintStats( Sim_Man_t * p , int _write) // _wrtie = 1 -> enable wrtie in funcSupp.txt
 {
 //    printf( "Inputs = %5d. Outputs = %5d. Sim words = %5d.\n", 
 //        Abc_NtkCiNum(p->pNtk), Abc_NtkCoNum(p->pNtk), p->nSimWords );
-    printf( "Total func supps   = %8d.\n", Sim_UtilCountSuppSizes(p, 0) );
-    printf( "Total struct supps = %8d.\n", Sim_UtilCountSuppSizes(p, 1) );
+    printf( "Total func supps   = %8d.\n", Sim_UtilCountSuppSizes(p, 0 , _write) );
+    printf( "Total struct supps = %8d.\n", Sim_UtilCountSuppSizes(p, 1 , 0) );
     printf( "Sat runs SAT       = %8d.\n", p->nSatRunsSat );
     printf( "Sat runs UNSAT     = %8d.\n", p->nSatRunsUnsat );
     ABC_PRT( "Simulation  ", p->timeSim );
