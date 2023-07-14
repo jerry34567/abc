@@ -640,13 +640,16 @@ int Sim_UtilCountPairsOne( Extra_BitMat_t * pMat, Vec_Int_t * vSupport )
   SeeAlso     []
 
 ***********************************************************************/
-int Sim_UtilCountPairsOnePrint( Extra_BitMat_t * pMat, Vec_Int_t * vSupport )
+int Sim_UtilCountPairsOnePrint( Extra_BitMat_t * pMat, Vec_Int_t * vSupport, FILE* output) // write to symmetric.txt
 {
     int i, k, Index1, Index2;
     Vec_IntForEachEntry( vSupport, i, Index1 )
     Vec_IntForEachEntryStart( vSupport, k, Index2, Index1+1 )
-        if ( Extra_BitMatrixLookup1( pMat, i, k ) )
+        if ( Extra_BitMatrixLookup1( pMat, i, k ) ) {
             printf( "(%d,%d) ", i, k );
+            fprintf(output," %d %d", i, k);
+        }
+
     return 0;
 }
 
@@ -666,12 +669,17 @@ void Sim_UtilCountPairsAllPrint( Sym_Man_t * p )
     int i;
     abctime clk;
 clk = Abc_Clock();
+    FILE* output;
+    output = fopen("./preprocess/symmetric.txt", "a+");
     for ( i = 0; i < p->nOutputs; i++ )
     {
         printf( "Output %2d :", i );
-        Sim_UtilCountPairsOnePrint( (Extra_BitMat_t *)Vec_PtrEntry(p->vMatrSymms, i), Vec_VecEntryInt(p->vSupports, i) );
+        fprintf(output,"Output");
+        Sim_UtilCountPairsOnePrint( (Extra_BitMat_t *)Vec_PtrEntry(p->vMatrSymms, i), Vec_VecEntryInt(p->vSupports, i), output);
         printf( "\n" );
+        fprintf(output,"\n");
     }
+    fclose(output);
 p->timeCount += Abc_Clock() - clk;
 }
 
