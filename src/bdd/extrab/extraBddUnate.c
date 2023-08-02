@@ -199,7 +199,7 @@ void Extra_UnateInfoPrint( Extra_UnateInfo_t * p , int * _unatePI)
     char * pBuffer;
     int i;
     pBuffer = ABC_ALLOC( char, p->nVarsMax+1 );
-    memset( pBuffer, '.', (size_t)p->nVarsMax );
+    memset( pBuffer, ',', (size_t)p->nVarsMax );
     FILE*      test;
     test = fopen("./preprocess/inputUnateness.txt", "a+");
     
