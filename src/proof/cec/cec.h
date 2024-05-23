@@ -120,6 +120,9 @@ struct Cec_ParFra_t_
     int              fVeryVerbose;  // verbose stats
     int              fVerbose;      // verbose stats
     int              iOutFail;      // the failed output
+    int              fBMiterInfo;   // printing BMiter information
+    int              nPO;           // number of po in original design given a bmiter
+    char *           pDumpName;     // file name to dump statistics
 };
 
 // combinational equivalence checking parameters
@@ -147,6 +150,8 @@ struct Cec_ParCor_t_
     int              nFrames;       // the number of time frames
     int              nPrefix;       // the number of time frames in the prefix
     int              nBTLimit;      // conflict limit at a node
+    int              nProcs;        // the number of processes
+    int              nPartSize;     // the partition size
     int              nLevelMax;     // (scorr only) the max number of levels
     int              nStepsMax;     // (scorr only) the max number of induction steps
     int              nLimitMax;     // (scorr only) stop after this many iterations if little or no improvement

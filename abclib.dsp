@@ -387,6 +387,10 @@ SOURCE=.\src\base\abci\abcOrder.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\base\abci\abcOrchestration.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\base\abci\abcPart.c
 # End Source File
 # Begin Source File
@@ -3523,6 +3527,10 @@ SOURCE=.\src\map\if\ifDec16.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\map\if\ifDec66.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\map\if\ifDec75.c
 # End Source File
 # Begin Source File
@@ -3584,6 +3592,10 @@ SOURCE=.\src\map\if\ifTruth.c
 # Begin Source File
 
 SOURCE=.\src\map\if\ifTune.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\map\if\acd\ac_wrapper.cpp
 # End Source File
 # Begin Source File
 
@@ -4899,6 +4911,10 @@ SOURCE=.\src\aig\gia\giaBidec.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\aig\gia\giaBound.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\aig\gia\giaCCof.c
 # End Source File
 # Begin Source File
@@ -5620,6 +5636,10 @@ SOURCE=.\src\proof\cec\cecMan.c
 # Begin Source File
 
 SOURCE=.\src\proof\cec\cecPat.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\proof\cec\cecProve.c
 # End Source File
 # Begin Source File
 

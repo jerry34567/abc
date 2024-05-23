@@ -101,6 +101,7 @@ struct Cec4_Man_t_
     Vec_Int_t *      vDisprPairs;
     Vec_Bit_t *      vFails;
     Vec_Bit_t *      vCoDrivers;
+    Vec_Int_t *      vPairs;   
     int              iPosRead;       // candidate reading position
     int              iPosWrite;      // candidate writing position
     int              iLastConst;     // last const node proved
@@ -218,6 +219,7 @@ void Cec4_ManSetParams( Cec_ParFra_t * pPars )
     pPars->nSatVarMax     =    1000;    // the max number of SAT variables before recycling SAT solver
     pPars->nCallsRecycle  =     500;    // calls to perform before recycling SAT solver
     pPars->nGenIters      =     100;    // pattern generation iterations
+    pPars->fBMiterInfo    =       0;    // printing BMiter information
 }
 
 /**Function*************************************************************
@@ -250,6 +252,7 @@ Cec4_Man_t * Cec4_ManCreate( Gia_Man_t * pAig, Cec_ParFra_t * pPars )
     p->vPat          = Vec_IntAlloc( 100 );
     p->vDisprPairs   = Vec_IntAlloc( 100 );
     p->vFails        = Vec_BitStart( Gia_ManObjNum(pAig) );
+    p->vPairs        = pPars->fUseCones ? Vec_IntAlloc( 100 ) : NULL;
     //pAig->pData     = p->pSat; // point AIG manager to the solver
     //Vec_IntFreeP( &p->pAig->vPats );
     //p->pAig->vPats = Vec_IntAlloc( 1000 );
@@ -304,6 +307,7 @@ void Cec4_ManDestroy( Cec4_Man_t * p )
     Vec_IntFreeP( &p->vPat );
     Vec_IntFreeP( &p->vDisprPairs );
     Vec_BitFreeP( &p->vFails );
+    Vec_IntFreeP( &p->vPairs );
     Vec_BitFreeP( &p->vCoDrivers );
     Vec_IntFreeP( &p->vRefClasses );
     Vec_IntFreeP( &p->vRefNodes );
@@ -1686,12 +1690,26 @@ int Cec4_ManSweepNode( Cec4_Man_t * p, int iObj, int iRepr )
     {
         p->nSatUndec++;
         assert( status == GLUCOSE_UNDEC );
-        Gia_ObjSetFailed( p->pAig, iObj );
-        Vec_BitWriteEntry( p->vFails, iObj, 1 );
-        //if ( iRepr )
-        //Vec_BitWriteEntry( p->vFails, iRepr, 1 );
-        p->timeSatUndec += Abc_Clock() - clk;
-        RetValue = 2;
+        if ( p->vPairs ) // speculate
+        {
+            Vec_IntPushTwo( p->vPairs, Abc_Var2Lit(iRepr, 0), Abc_Var2Lit(iObj, fCompl) );
+            p->timeSatUndec += Abc_Clock() - clk;
+            // mark as proved
+            pObj->Value = Abc_LitNotCond( pRepr->Value, fCompl );
+            Gia_ObjSetProved( p->pAig, iObj );
+            if ( iRepr == 0 )
+                p->iLastConst = iObj;
+            RetValue = 1;
+        }
+        else
+        {
+            Gia_ObjSetFailed( p->pAig, iObj );
+            Vec_BitWriteEntry( p->vFails, iObj, 1 );
+            //if ( iRepr )
+            //Vec_BitWriteEntry( p->vFails, iRepr, 1 );
+            p->timeSatUndec += Abc_Clock() - clk;
+            RetValue = 2;
+        }
     }
     return RetValue;
 }
@@ -1729,8 +1747,87 @@ Gia_Obj_t * Cec4_ManFindRepr( Gia_Man_t * p, Cec4_Man_t * pMan, int iObj )
     pMan->timeResimLoc += Abc_Clock() - clk;
     return NULL;
 }
+void Gia_ManRemoveWrongChoices( Gia_Man_t * p )
+{
+    int i = 0, iObj, iPrev, Counter = 0;
+    for ( iPrev = i, iObj = Gia_ObjNext(p, i); -1 < iObj; iObj = Gia_ObjNext(p, iPrev) )
+    {
+        Gia_Obj_t * pRepr = Gia_ObjReprObj(p, iObj);
+        assert( pRepr == Gia_ManConst0(p) );
+        if( !Gia_ObjFailed(p,iObj) && Abc_Lit2Var(Gia_ManObj(p,iObj)->Value) == Abc_Lit2Var(pRepr->Value) )
+        {
+            iPrev = iObj;
+            continue;
+        }
+        Gia_ObjSetRepr( p, iObj, GIA_VOID );
+        Gia_ObjSetNext( p, iPrev, Gia_ObjNext(p, iObj) );
+        Gia_ObjSetNext( p, iObj, 0 );
+        Counter++;
+    }
+    Gia_ManForEachClass( p, i )
+    {
+        for ( iPrev = i, iObj = Gia_ObjNext(p, i); -1 < iObj; iObj = Gia_ObjNext(p, iPrev) )
+        {
+            Gia_Obj_t * pRepr = Gia_ObjReprObj(p, iObj);
+            if( !Gia_ObjFailed(p,iObj) && Abc_Lit2Var(Gia_ManObj(p,iObj)->Value) == Abc_Lit2Var(pRepr->Value) )
+            {
+                iPrev = iObj;
+                continue;
+            }
+            Gia_ObjSetRepr( p, iObj, GIA_VOID );
+            Gia_ObjSetNext( p, iPrev, Gia_ObjNext(p, iObj) );
+            Gia_ObjSetNext( p, iObj, 0 );
+            Counter++;
+        }
+    }
+    //Abc_Print( 1, "Removed %d wrong choices.\n", Counter );
+}
+
+void Cec4_ManSimulateDumpInfo( Cec4_Man_t * pMan )
+{
+    Gia_Obj_t * pObj; int i, k, nWords = pMan->pAig->nSimWords, nOuts[2] = {0};
+    Vec_Wrd_t * vSims = NULL, * vSimsPi = NULL;
+    FILE * pFile = fopen( pMan->pPars->pDumpName, "wb" );
+    if ( pFile == NULL ) {
+        printf( "Cannot open file \"%s\" for writing primary output information.\n", pMan->pPars->pDumpName );
+        return;
+    }
+    vSimsPi = Vec_WrdDup( pMan->pAig->vSimsPi );
+    memmove( Vec_WrdArray(vSimsPi), Vec_WrdArray(vSimsPi) + nWords, Gia_ManCiNum(pMan->pAig) * nWords );
+    Vec_WrdShrink( vSimsPi, Gia_ManCiNum(pMan->pAig) * nWords );
+    if ( Abc_TtIsConst0(Vec_WrdArray(vSimsPi), Gia_ManCiNum(pMan->pAig) * nWords) ) {
+        Vec_WrdFree( vSimsPi );
+        vSimsPi = Vec_WrdStartRandom( Gia_ManCiNum(pMan->pAig) * nWords );
+    }
+    vSims = Gia_ManSimPatSimOut( pMan->pAig, vSimsPi, 1 );
+    assert( nWords * Gia_ManCiNum(pMan->pAig) == Vec_WrdSize(vSimsPi) );
+    Gia_ManForEachCo( pMan->pAig, pObj, i )
+    {
+        void Extra_PrintHex2( FILE * pFile, unsigned * pTruth, int nVars );
+        word * pSims = Vec_WrdEntryP( vSims, nWords*i );
+        //Extra_PrintHex2( stdout, (unsigned *)pSims, 8 ); printf( "\n" );
+        fprintf( pFile, "%d ", i );
+        if ( Gia_ObjFaninLit0p(pMan->pNew, Gia_ManCo(pMan->pNew, i)) == 0 ) 
+            nOuts[0]++;
+        else if ( Abc_TtIsConst0(pSims, nWords) )
+            fprintf( pFile, "-" );
+        else {
+            int iPat = Abc_TtFindFirstBit2(pSims, nWords);
+            for ( k = 0; k < Gia_ManPiNum(pMan->pAig); k++ )
+                fprintf( pFile, "%d", Abc_TtGetBit(Vec_WrdEntryP(vSimsPi, nWords*k), iPat) );
+            nOuts[1]++;
+        }
+        fprintf( pFile, "\n" );
+    }
+    printf( "Information about %d sat, %d unsat, and %d undecided primary outputs was written into file \"%s\".\n", 
+        nOuts[1], nOuts[0], Gia_ManCoNum(pMan->pAig)-nOuts[1]-nOuts[0], pMan->pPars->pDumpName );
+    fclose( pFile );
+    Vec_WrdFree( vSims );
+    Vec_WrdFree( vSimsPi );
+}
 int Cec4_ManPerformSweeping( Gia_Man_t * p, Cec_ParFra_t * pPars, Gia_Man_t ** ppNew, int fSimOnly )
 {
+
     Cec4_Man_t * pMan = Cec4_ManCreate( p, pPars ); 
     Gia_Obj_t * pObj, * pRepr; 
     int i, fSimulate = 1;
@@ -1826,8 +1923,16 @@ int Cec4_ManPerformSweeping( Gia_Man_t * p, Cec_ParFra_t * pPars, Gia_Man_t ** p
             if ( pRepr == NULL )
                 continue;
         }
+        int id_obj = Gia_ObjId( p, pObj );
+        int id_repr = Gia_ObjId( p, pRepr );
+
         if ( Abc_Lit2Var(pObj->Value) == Abc_Lit2Var(pRepr->Value) )
         {
+            if ( pPars->fBMiterInfo ) 
+            {
+                Bnd_ManMerge( id_repr, id_obj, pObj->fPhase ^ pRepr->fPhase );
+            }
+
             assert( (pObj->Value ^ pRepr->Value) == (pObj->fPhase ^ pRepr->fPhase) );
             Gia_ObjSetProved( p, i );
             if ( Gia_ObjId(p, pRepr) == 0 )
@@ -1835,8 +1940,26 @@ int Cec4_ManPerformSweeping( Gia_Man_t * p, Cec_ParFra_t * pPars, Gia_Man_t ** p
             continue;
         }
         if ( Cec4_ManSweepNode(pMan, i, Gia_ObjId(p, pRepr)) && Gia_ObjProved(p, i) )
+        {
+            if (pPars->fBMiterInfo){
+
+                Bnd_ManMerge( id_repr, id_obj, pObj->fPhase ^ pRepr->fPhase );
+                // printf( "proven %d merged into %d (phase : %d)\n", Gia_ObjId(p, pObj), Gia_ObjId(p,pRepr), pObj->fPhase ^ pRepr -> fPhase );
+
+            }
             pObj->Value = Abc_LitNotCond( pRepr->Value, pObj->fPhase ^ pRepr->fPhase );
+
+
+        }
     }
+    
+    if ( pPars->fBMiterInfo )
+    {
+        // print
+        Bnd_ManFinalizeMappings();
+        // Bnd_ManPrintMappings();
+    }
+
     if ( p->iPatsPi > 0 )
     {
         abctime clk2 = Abc_Clock();
@@ -1861,17 +1984,33 @@ finalize:
             pMan->nSatSat,   pMan->nConflicts[0][0], (float)pMan->nConflicts[0][1]/Abc_MaxInt(1, pMan->nSatSat  -pMan->nConflicts[0][0]), pMan->nConflicts[0][2],  
             pMan->nSatUndec,  
             pMan->nSimulates, pMan->nRecycles, 100.0*pMan->nGates[1]/Abc_MaxInt(1, pMan->nGates[0]+pMan->nGates[1]) );
+    if ( pMan->vPairs && Vec_IntSize(pMan->vPairs) )
+    {
+        extern char * Extra_FileNameGeneric( char * FileName );
+        char pFileName[1000], * pBase = Extra_FileNameGeneric(p->pName);
+        extern Gia_Man_t * Gia_ManDupMiterCones( Gia_Man_t * p, Vec_Int_t * vPairs );
+        Gia_Man_t * pM = Gia_ManDupMiterCones( p, pMan->vPairs );
+        sprintf( pFileName, "%s_sm.aig", pBase );
+        Gia_AigerWrite( pM, pFileName, 0, 0, 0 );
+        Gia_ManStop( pM );
+        ABC_FREE( pBase );
+        printf( "Dumped miter \"%s\" with %d pairs.\n", pFileName, pMan->vPairs ? Vec_IntSize(pMan->vPairs)/2 : -1 );
+    }
+    if ( pPars->pDumpName )
+        Cec4_ManSimulateDumpInfo( pMan );
     Cec4_ManDestroy( pMan );
     //Gia_ManStaticFanoutStop( p );
     //Gia_ManEquivPrintClasses( p, 1, 0 );
     if ( ppNew && *ppNew == NULL )
         *ppNew = Gia_ManDup(p);
+    Gia_ManRemoveWrongChoices( p );
     return p->pCexSeq ? 0 : 1;
 }
 Gia_Man_t * Cec4_ManSimulateTest( Gia_Man_t * p, Cec_ParFra_t * pPars )
 {
     Gia_Man_t * pNew = NULL;
     Cec4_ManPerformSweeping( p, pPars, &pNew, 0 );
+
     return pNew;
 }
 void Cec4_ManSimulateTest2( Gia_Man_t * p, int nConfs, int fVerbose )

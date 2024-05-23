@@ -3625,7 +3625,7 @@ Gia_Man_t * Gia_ManChangeTest3( Gia_Man_t * p )
 {
     extern void Exa6_WriteFile2( char * pFileName, int nVars, int nDivs, int nOuts, Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut );
     extern void Exa_ManExactPrint( Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut, int nDivs, int nOuts );
-    extern Mini_Aig_t * Exa_ManExactSynthesis6Int( Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut, int nVars, int nDivs, int nOuts, int nNodes, int fOnlyAnd, int fVerbose );
+    extern Mini_Aig_t * Exa_ManExactSynthesis6Int( Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut, int nVars, int nDivs, int nOuts, int nNodes, int fOnlyAnd, int fVerbose, char * pFileName );
     extern Gia_Man_t * Gia_ManDupMini( Gia_Man_t * p, Vec_Int_t * vIns, Vec_Int_t * vDivs, Vec_Int_t * vOuts, Mini_Aig_t * pMini );
 
     Gia_Man_t *  pNew  = NULL;
@@ -3639,7 +3639,7 @@ Gia_Man_t * Gia_ManChangeTest3( Gia_Man_t * p )
     Gia_ManRelCompute( p, vIns, vDivs, vOuts, &vSimsDiv, &vSimsOut );
     Exa_ManExactPrint( vSimsDiv, vSimsOut, 1 + Vec_IntSize(vIns) + Vec_IntSize(vDivs), Vec_IntSize(vOuts) );
     //Exa6_WriteFile2( "mul44_i%d_n%d_t%d_s%d.rel", Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), nNodes );
-    pMini = Exa_ManExactSynthesis6Int( vSimsDiv, vSimsOut, Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), nNodes, 1, 1 );
+    pMini = Exa_ManExactSynthesis6Int( vSimsDiv, vSimsOut, Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), nNodes, 1, 1, NULL );
     if ( pMini )
     {
         pNew = Gia_ManDupMini( p, vIns, vDivs, vOuts, pMini );
@@ -3688,6 +3688,58 @@ Vec_Str_t * Gia_ManComputeRange( Gia_Man_t * p )
     Vec_WrdFree( vSimsPi );
     return vOut;
 }
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+void Gia_ManComparePrint( Gia_Man_t * p, Gia_Man_t * q )
+{
+    Vec_Wrd_t * vSimsPi = Vec_WrdStartTruthTables( Gia_ManCiNum(p) );
+    Vec_Wrd_t * vSimsP  = Gia_ManSimPatSimOut( p, vSimsPi, 0 );
+    Vec_Wrd_t * vSimsQ  = Gia_ManSimPatSimOut( q, vSimsPi, 0 );
+    int i, k, nWords = Vec_WrdSize(vSimsPi) / Gia_ManCiNum(p), Count = 0;
+    Gia_Obj_t * pObjP, * pObjQ;
+    Gia_ManSetPhase( p );
+    Gia_ManSetPhase( q );
+    Gia_ManForEachObj( p, pObjP, i ) {
+        word * pSim = Vec_WrdEntryP( vSimsP, i * nWords );
+        if ( pSim[0] & 1 ) Abc_TtNot( pSim, nWords );
+    }
+    Gia_ManForEachObj( q, pObjQ, i ) {
+        word * pSim = Vec_WrdEntryP( vSimsQ, i * nWords );
+        if ( pSim[0] & 1 ) Abc_TtNot( pSim, nWords );
+    }    
+    Gia_ManForEachAnd( q, pObjQ, i ) {
+        word * pSimQ = Vec_WrdEntryP( vSimsQ, i * nWords );
+        int fFirst = 1;
+        Gia_ManForEachObj( p, pObjP, k ) {
+            word * pSimP = Vec_WrdEntryP( vSimsP, k * nWords );
+            if ( !Abc_TtEqual(pSimQ, pSimP, nWords) )
+                continue;
+            if ( fFirst ) {
+                printf( "%5d :", i );
+                fFirst = 0;
+                Count++;
+            }
+            printf( " %5d(%d)", k, pObjQ->fPhase ^ pObjP->fPhase );
+        }
+        if ( !fFirst )
+            printf( "\n");
+    }   
+    printf( "Found %d equivalent nodes.\n", Count );
+    Vec_WrdFree( vSimsP );
+    Vec_WrdFree( vSimsQ );
+    Vec_WrdFree( vSimsPi );
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
