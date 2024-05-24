@@ -46,7 +46,7 @@ ABC_NAMESPACE_IMPL_START
 
 abctime s_MappingTime = 0;
 int s_MappingMem = 0;
-abctime s_ResubTime = 0;
+//abctime s_ResubTime = 0;
 abctime s_ResynTime = 0;
 
 ////////////////////////////////////////////////////////////////////////
@@ -226,6 +226,37 @@ float Abc_NtkGetArea( Abc_Ntk_t * pNtk )
 
 /**Function*************************************************************
 
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+float Abc_NtkGetAreaSpecial( Abc_Ntk_t * pNtk )
+{
+    Abc_Obj_t * pObj; int i, Count = 0;    
+    Abc_NtkForEachNode( pNtk, pObj, i )
+        if ( !strncmp( Mio_GateReadName((Mio_Gate_t*)pObj->pData), "mm", 2 ) )
+           Count++;
+    return 1.0*Count/Abc_NtkNodeNum(pNtk);
+}
+float Abc_NtkGetAreaSpecial2( Abc_Ntk_t * pNtk )
+{
+    Abc_Obj_t * pObj; int i; 
+    float Count = 0, CountAll = 0;    
+    Abc_NtkForEachNode( pNtk, pObj, i ) {
+        if ( !strncmp( Mio_GateReadName((Mio_Gate_t*)pObj->pData), "mm", 2 ) )
+           Count += Mio_GateReadArea((Mio_Gate_t*)pObj->pData);
+        CountAll += Mio_GateReadArea((Mio_Gate_t*)pObj->pData);
+    }
+    return 1.0*Count/CountAll;
+}
+
+/**Function*************************************************************
+
   Synopsis    [Print the vital stats of the network.]
 
   Description []
@@ -360,7 +391,7 @@ void Abc_NtkPrintStats( Abc_Ntk_t * pNtk, int fFactored, int fSaveBest, int fDum
     if ( fPrintMem )
         Abc_Print( 1,"  mem =%5.2f MB", Abc_NtkMemory(pNtk)/(1<<20) );
     Abc_Print( 1,"\n" );
-
+/*
     // print the statistic into a file
     if ( fDumpResult )
     {
@@ -374,6 +405,8 @@ void Abc_NtkPrintStats( Abc_Ntk_t * pNtk, int fFactored, int fSaveBest, int fDum
         fprintf( pTable, "\n" );
         fclose( pTable );
     }
+*/
+
 /*
     {
         FILE * pTable;
@@ -384,21 +417,6 @@ void Abc_NtkPrintStats( Abc_Ntk_t * pNtk, int fFactored, int fSaveBest, int fDum
         fprintf( pTable, "%d ", Abc_NtkNodeNum(pNtk) );
         fprintf( pTable, "%d ", Abc_NtkLatchNum(pNtk) );
         fprintf( pTable, "%d ", Abc_NtkLevel(pNtk) );
-        fprintf( pTable, "\n" );
-        fclose( pTable );
-    }
-*/
-
-/*
-    // print the statistic into a file
-    {
-        FILE * pTable;
-        pTable = fopen( "ucsb/stats.txt", "a+" );
-//        fprintf( pTable, "%s ",  pNtk->pSpec );
-        fprintf( pTable, "%d ",  Abc_NtkNodeNum(pNtk) );
-//        fprintf( pTable, "%d ",  Abc_NtkLevel(pNtk) );
-//        fprintf( pTable, "%.0f ", Abc_NtkGetMappedArea(pNtk) );
-//        fprintf( pTable, "%.2f ", Abc_NtkDelayTrace(pNtk) );
         fprintf( pTable, "\n" );
         fclose( pTable );
     }
@@ -1199,6 +1217,17 @@ void Abc_NtkPrintSop( FILE * pFile, Abc_Ntk_t * pNtk, int fUseRealNames )
   SeeAlso     []
 
 ***********************************************************************/
+char * Abc_NodeGetPrintName( Abc_Obj_t * pObj )
+{
+    Abc_Obj_t * pFan, * pFanout = NULL; int k, nPos = 0;
+    if ( !Abc_ObjIsNode(pObj) ) 
+        return Abc_ObjName(pObj);
+    Abc_ObjForEachFanout( pObj, pFan, k ) {
+        if ( Abc_ObjIsPo(pFan) )
+            pFanout = pFan, nPos++;
+    }
+    return Abc_ObjName(nPos == 1 ? pFanout : pObj);
+}
 void Abc_NtkPrintLevel( FILE * pFile, Abc_Ntk_t * pNtk, int fProfile, int fListNodes, int fVerbose )
 {
     Abc_Obj_t * pNode;
@@ -1214,7 +1243,7 @@ void Abc_NtkPrintLevel( FILE * pFile, Abc_Ntk_t * pNtk, int fProfile, int fListN
             printf( "%2d : ", i );
             Abc_NtkForEachNode( pNtk, pNode, k )
                 if ( (int)pNode->Level == i )
-                    printf( " %s", Abc_ObjName(pNode) );
+                    printf( " %s", Abc_NodeGetPrintName(pNode) );
             printf( "\n" );
         }
         return;

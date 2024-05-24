@@ -6,6 +6,7 @@ ReleaseLib/
 ReleaseExe/
 ReleaseExt/
 
+_/
 _TEST/
 lib/abc*
 lib/m114*
@@ -60,3 +61,4 @@ tags
 
 /cmake
 /cscope
+abc.history

@@ -387,6 +387,10 @@ SOURCE=.\src\base\abci\abcOrder.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\base\abci\abcOrchestration.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\base\abci\abcPart.c
 # End Source File
 # Begin Source File
@@ -5620,6 +5624,10 @@ SOURCE=.\src\proof\cec\cecMan.c
 # Begin Source File
 
 SOURCE=.\src\proof\cec\cecPat.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\proof\cec\cecProve.c
 # End Source File
 # Begin Source File
 
