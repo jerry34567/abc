@@ -545,11 +545,11 @@ void Io_WriteVerilogObjects( FILE * pFile, Abc_Ntk_t * pNtk, int fOnlyAnds )
                 fprintf( pFile, "(" );
                 for ( pGatePin = Mio_GateReadPins(pGate), i = 0; pGatePin; pGatePin = Mio_PinReadNext(pGatePin), i++ )
                 {
-                    // fprintf( pFile, ".%s", Io_WriteVerilogGetName(Mio_PinReadName(pGatePin)) );
+                    fprintf( pFile, ".%s", Io_WriteVerilogGetName(Mio_PinReadName(pGatePin)) );
                     fprintf( pFile, "(%s), ", Io_WriteVerilogGetName(Abc_ObjName( Abc_ObjFanin(pObj,i) )) );
                 }
                 assert ( i == Abc_ObjFaninNum(pObj) );
-                // fprintf( pFile, ".%s", Io_WriteVerilogGetName(Mio_GateReadOutName(pGate)) );
+                fprintf( pFile, ".%s", Io_WriteVerilogGetName(Mio_GateReadOutName(pGate)) );
                 fprintf( pFile, "(%s)", Io_WriteVerilogGetName(Abc_ObjName( Abc_ObjFanout0(pObj) )) );
                 fprintf( pFile, ");\n" );
             }
@@ -589,6 +589,7 @@ void Io_WriteVerilogObjects( FILE * pFile, Abc_Ntk_t * pNtk, int fOnlyAnds )
                 Hop_IthVar((Hop_Man_t *)pNtk->pManFunc, k)->pData = Extra_UtilStrsav(Io_WriteVerilogGetName(Abc_ObjName(pFanin)));
             // write the formula
             Hop_ObjPrintVerilog( pFile, pFunc, vLevels, 0, fOnlyAnds );
+            Hop_ObjPrintEqn(stdout, pObj, vLevels, 0);
             if ( pObj->fPersist )
             {
                 Abc_Obj_t * pFan0 = Abc_ObjFanin0(Abc_ObjFanin(pObj, 0));
