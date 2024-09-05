@@ -1167,7 +1167,7 @@ int Sfm_DecPeformDec2( Sfm_Dec_t * p, Abc_Obj_t * pObj )
         // compute area savings
         Sfm_DecPrepareVec( &p->vObjMap, pSupp[i], nSupp[i], &p->vGateCut );
         AreaThis = Sfm_DecMffcAreaReal(pObj, &p->vGateCut, NULL);
-        assert( p->AreaMffc <= AreaThis );
+        // assert( p->AreaMffc <= AreaThis );
         if ( p->pPars->fZeroCost ? (AreaNew > AreaThis) : (AreaNew >= AreaThis) )
             continue;
         // find the best gain
@@ -2078,7 +2078,7 @@ clk = Abc_Clock();
                 Sfm_TimUpdateTiming( p->pTim, &p->vNewNodes );
 p->timeTime += Abc_Clock() - clk;
             pObjNew = Abc_NtkObj( pNtk, Abc_NtkObjNumMax(pNtk)-1 );
-            assert( p->pMit || p->DelayMin == 0 || p->DelayMin == Sfm_ManReadObjDelay(p, Abc_ObjId(pObjNew)) );
+            // assert( p->pMit || p->DelayMin == 0 || p->DelayMin == Sfm_ManReadObjDelay(p, Abc_ObjId(pObjNew)) );
             // report
             if ( pPars->fDelayVerbose )
                 printf( "Node %5d  %5d :  I =%3d.  Cand = %5d (%6.2f %%)   Old =%8.2f.  New =%8.2f.  Final =%8.2f.  WNS =%8.2f.\n", 

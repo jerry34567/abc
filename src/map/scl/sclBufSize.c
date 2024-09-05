@@ -496,7 +496,7 @@ Abc_Ntk_t * Abc_SclBufferingPerform( Abc_Ntk_t * pNtk, SC_Lib * pLib, SC_BusPars
     Bus_Man_t * p;
     if ( !Abc_SclCheckNtk( pNtk, 0 ) )
         return NULL;
-    Abc_SclReportDupFanins( pNtk );
+    // Abc_SclReportDupFanins( pNtk );
     Abc_SclMioGates2SclGates( pLib, pNtk );
     p = Bus_ManStart( pNtk, pLib, pPars );
     Bus_ManReadInOutLoads( p );

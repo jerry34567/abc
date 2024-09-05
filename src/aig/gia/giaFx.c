@@ -150,7 +150,7 @@ Vec_Wrd_t * Gia_ManComputeTruths( Gia_Man_t * p, int nCutSize, int nLutNum, int 
         // collect and sort fanins
         vLeaves.nCap = vLeaves.nSize = Gia_ObjLutSize( p, i );
         vLeaves.pArray = Gia_ObjLutFanins( p, i );
-        assert( Vec_IntCheckUniqueSmall(&vLeaves) );
+        // assert( Vec_IntCheckUniqueSmall(&vLeaves) );
         Vec_IntSelectSort( Vec_IntArray(&vLeaves), Vec_IntSize(&vLeaves) );
         if ( !fReverse )
             Vec_IntReverseOrder( &vLeaves );

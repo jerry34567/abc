@@ -805,8 +805,8 @@ Vec_Str_t * Abc_SclProduceGenlibStrSimple( SC_Lib * p )
     // mark skipped cells
 //    Abc_SclMarkSkippedCells( p );
     vStr = Vec_StrAlloc( 1000 );
-    Vec_StrPrintStr( vStr, "GATE _const0_            0.00 z=CONST0;\n" );
-    Vec_StrPrintStr( vStr, "GATE _const1_            0.00 z=CONST1;\n" );
+    Vec_StrPrintStr( vStr, "GATE _const0_            0.00 Y=CONST0;\n" );
+    Vec_StrPrintStr( vStr, "GATE _const1_            0.00 Y=CONST1;\n" );
     SC_LibForEachCell( p, pCell, i )
     {
         if ( pCell->n_inputs == 0 )

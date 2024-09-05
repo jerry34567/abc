@@ -121,6 +121,7 @@ static void           Super_WriteLibrary( Super_Man_t * pMan );
 
 static void           Super_WriteLibraryTreeFile( Super_Man_t * pMan );
 static Vec_Str_t *    Super_WriteLibraryTreeStr( Super_Man_t * pMan );
+static int mycounter;
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -140,6 +141,7 @@ static Vec_Str_t *    Super_WriteLibraryTreeStr( Super_Man_t * pMan );
 void Super_Precompute( Mio_Library_t * pLibGen, int nVarsMax, int nLevels, int nGatesMax, float tDelayMax, float tAreaMax, int TimeLimit, int fSkipInv, int fVerbose, char * pFileName )
 {
     Vec_Str_t * vStr;
+    mycounter = 0;
     FILE * pFile = fopen( pFileName, "wb" );
     if ( pFile == NULL )
     {     
@@ -151,6 +153,10 @@ void Super_Precompute( Mio_Library_t * pLibGen, int nVarsMax, int nLevels, int n
     {
         fwrite( Vec_StrArray(vStr), 1, Vec_StrSize(vStr), pFile );
         Vec_StrFree( vStr );
+    }
+    // printf("mycouter: %d\n", mycounter);
+    if (mycounter > 10000) {
+        Mio_LibrarySetName(pLibGen, Abc_UtilStrsav("error"));
     }
     fclose( pFile );
     // report the result of writing
@@ -1388,14 +1394,17 @@ if ( pMan->fVerbose )
 ***********************************************************************/
 void Super_WriteLibraryTreeStr_rec( Vec_Str_t * vStr, Super_Man_t * pMan, Super_Gate_t * pSuper, int * pCounter )
 {
+    mycounter++;
+    if (mycounter > 10000) return;
     int nFanins, i;
     // skip an elementary variable and a gate that was already written
     if ( pSuper->fVar || pSuper->Number > 0 )
         return;
     // write the fanins
     nFanins = Mio_GateReadPinNum(pSuper->pRoot);
-    for ( i = 0; i < nFanins; i++ )
+    for ( i = 0; i < nFanins; i++ ) {
         Super_WriteLibraryTreeStr_rec( vStr, pMan, pSuper->pFanins[i], pCounter );
+    }
     // finally write the gate
     pSuper->Number = (*pCounter)++;
 //    fprintf( pFile, "%s", pSuper->fSuper? "* " : "" );
@@ -1415,6 +1424,8 @@ void Super_WriteLibraryTreeStr_rec( Vec_Str_t * vStr, Super_Man_t * pMan, Super_
     // written in the old format and written in the new format with formulas
 //    fprintf( pFile, "    # %s", Super_WriteLibraryGateName( pSuper ) );
 //    fprintf( pFile, "\n" );
+    // Vec_StrPrintStr( vStr, "    # ");
+    // Vec_StrPrintStr( vStr, Super_WriteLibraryGateName( pSuper ));
     Vec_StrPrintStr( vStr, "\n" );
 }
 Vec_Str_t * Super_WriteLibraryTreeStr( Super_Man_t * pMan )

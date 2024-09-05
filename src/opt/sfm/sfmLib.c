@@ -332,6 +332,7 @@ static inline int Sfm_LibNewContains( Sfm_Fun_t * pObj, int * pProf, int Area, i
             return 0;
     return 1;
 }
+
 void Sfm_LibPrepareAdd( Sfm_Lib_t * p, word * pTruth, int * Perm, int nFanins, Mio_Cell2_t * pCellBot, Mio_Cell2_t * pCellTop, int InTop )
 {
     Sfm_Fun_t * pObj;

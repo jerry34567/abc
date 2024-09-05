@@ -277,7 +277,10 @@ int Super_CommandSupergates( Abc_Frame_t * pAbc, int argc, char **argv )
     // compute the gates
     FileName = Extra_FileNameGenericAppend(Mio_LibraryReadName(pLib), ".super");
     Super_Precompute( pLib, nVarsMax, nLevels, nGatesMax, DelayLimit, AreaLimit, TimeLimit, fSkipInvs, fVerbose, FileName );
-
+    if (!strcmp(Mio_LibraryReadName(pLib), "error")) {
+        Mio_LibraryDelete( pLib );
+        return 1;
+    }
     // delete the library
     Mio_LibraryDelete( pLib );
     return 0;

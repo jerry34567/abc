@@ -526,7 +526,8 @@ void Io_WriteVerilogObjects( FILE * pFile, Abc_Ntk_t * pNtk, int fOnlyAnds )
             Mio_Pin_t * pGatePin;
             if ( Abc_ObjFaninNum(pObj) == 0 && (!strcmp(Mio_GateReadName(pGate), "_const0_") || !strcmp(Mio_GateReadName(pGate), "_const1_")) )
             {
-                fprintf( pFile, "  %-*s %s = 1\'b%d;\n", Length, "assign", Io_WriteVerilogGetName(Abc_ObjName( Abc_ObjFanout0(pObj) )), !strcmp(Mio_GateReadName(pGate), "_const1_") );
+                fprintf( pFile, "  %-*s g%0*d (.A(1\'b%d), .Y(%s));\n", Length, Mio_GateReadName(Mio_LibraryReadBuf((Mio_Library_t *)pNtk->pManFunc)), nDigits, Counter++ ,!strcmp(Mio_GateReadName(pGate), "_const1_"), Io_WriteVerilogGetName(Abc_ObjName( Abc_ObjFanout0(pObj) )) );
+                // fprintf( pFile, "  %-*s %s = 1\'b%d;\n", Length, "assign", Io_WriteVerilogGetName(Abc_ObjName( Abc_ObjFanout0(pObj) )), !strcmp(Mio_GateReadName(pGate), "_const1_") );
                 continue;
             }
             // write the node

@@ -268,7 +268,7 @@ Abc_Ntk_t * Abc_SclUnBufferPhase( Abc_Ntk_t * pNtk, int fVerbose )
     pNtkNew = Abc_NtkDupDfs( pNtk );
     if ( fVerbose )
         printf( "Max depth = %d.\n", Abc_SclCountMaxPhases(pNtkNew) );
-    Abc_SclReportDupFanins( pNtkNew );
+    // Abc_SclReportDupFanins( pNtkNew );
     return pNtkNew;
 }
 

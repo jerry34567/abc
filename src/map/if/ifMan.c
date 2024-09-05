@@ -384,7 +384,7 @@ If_Obj_t * If_ManCreateCo( If_Man_t * p, If_Obj_t * pDriver )
 If_Obj_t * If_ManCreateAnd( If_Man_t * p, If_Obj_t * pFan0, If_Obj_t * pFan1 )
 {
     If_Obj_t * pObj;
-    // perform constant propagation
+    // perform pagation
     if ( pFan0 == pFan1 )
         return pFan0;
     if ( pFan0 == If_Not(pFan1) )

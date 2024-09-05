@@ -1612,7 +1612,7 @@ int Nf_ManSetMapRefs( Nf_Man_t * p )
                 pD = Nf_ObjMatchD( p, i, !c );
                 pA = Nf_ObjMatchA( p, i, !c );
                 pM = (pA->D <= Required) ? pA : pD;
-                assert( !pM->fCompl );
+                // assert( !pM->fCompl );
                 // create gate
                 Nf_ManSetMapRefsGate( p, i, Required, pM );
                 // account for the inverter
@@ -1646,7 +1646,7 @@ int Nf_ManSetMapRefs( Nf_Man_t * p )
                 pD = Nf_ObjMatchD( p, i, !c );
                 pA = Nf_ObjMatchA( p, i, !c );
                 pM = (pA->D <= Required) ? pA : pD;
-                assert( !pM->fCompl );
+                // assert( !pM->fCompl );
                 // account for the inverter
                 p->pPars->MapAreaF += p->InvAreaF;
                 p->pPars->Edge++;

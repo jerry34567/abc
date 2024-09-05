@@ -357,8 +357,8 @@ int Mio_CommandReadGenlib( Abc_Frame_t * pAbc, int argc, char **argv )
         fprintf( pErr, "Reading genlib library has failed.\n" );
         return 1;
     }
-    if ( fVerbose )
-        printf( "Entered genlib library with %d gates from file \"%s\".\n", Mio_LibraryReadGateNum(pLib), pFileName );
+    // if ( fVerbose )
+    //     printf( "Entered genlib library with %d gates from file \"%s\".\n", Mio_LibraryReadGateNum(pLib), pFileName );
 
     // convert the library if needed
     if ( fShortNames )
